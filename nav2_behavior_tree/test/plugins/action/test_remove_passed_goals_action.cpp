@@ -23,9 +23,9 @@
 #include "geometry_msgs/msg/pose_stamped.hpp"
 #include "nav2_util/geometry_utils.hpp"
 
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 
-#include "nav2_behavior_tree/utils/test_action_server.hpp"
+#include "utils/test_action_server.hpp"
 #include "nav2_behavior_tree/plugins/action/remove_passed_goals_action.hpp"
 #include "utils/test_behavior_tree_fixture.hpp"
 
@@ -43,10 +43,10 @@ public:
     // Create the blackboard that will be shared by all of the nodes in the tree
     config_->blackboard = BT::Blackboard::create();
     // Put items on the blackboard
-    config_->blackboard->set(
+    config_->blackboard->set<rclcpp::Node::SharedPtr>(
       "node",
       node_);
-    config_->blackboard->set(
+    config_->blackboard->set<std::shared_ptr<tf2_ros::Buffer>>(
       "tf_buffer",
       transform_handler_->getBuffer());
 
@@ -105,7 +105,7 @@ TEST_F(RemovePassedGoalsTestFixture, test_tick)
   // create tree
   std::string xml_txt =
     R"(
-      <root BTCPP_format="4">
+      <root main_tree_to_execute = "MainTree" >
         <BehaviorTree ID="MainTree">
           <RemovePassedGoals radius="0.5" input_goals="{goals}" output_goals="{goals}"/>
         </BehaviorTree>
@@ -114,19 +114,19 @@ TEST_F(RemovePassedGoalsTestFixture, test_tick)
   tree_ = std::make_shared<BT::Tree>(factory_->createTreeFromText(xml_txt, config_->blackboard));
 
   // create new goal and set it on blackboard
-  geometry_msgs::msg::PoseStampedArray poses;
-  poses.poses.resize(4);
-  poses.poses[0].pose.position.x = 0.0;
-  poses.poses[0].pose.position.y = 0.0;
+  std::vector<geometry_msgs::msg::PoseStamped> poses;
+  poses.resize(4);
+  poses[0].pose.position.x = 0.0;
+  poses[0].pose.position.y = 0.0;
 
-  poses.poses[1].pose.position.x = 0.5;
-  poses.poses[1].pose.position.y = 0.0;
+  poses[1].pose.position.x = 0.5;
+  poses[1].pose.position.y = 0.0;
 
-  poses.poses[2].pose.position.x = 1.0;
-  poses.poses[2].pose.position.y = 0.0;
+  poses[2].pose.position.x = 1.0;
+  poses[2].pose.position.y = 0.0;
 
-  poses.poses[3].pose.position.x = 2.0;
-  poses.poses[3].pose.position.y = 0.0;
+  poses[3].pose.position.x = 2.0;
+  poses[3].pose.position.y = 0.0;
 
   config_->blackboard->set("goals", poses);
 
@@ -136,12 +136,12 @@ TEST_F(RemovePassedGoalsTestFixture, test_tick)
   }
 
   // check that it removed the point in range
-  geometry_msgs::msg::PoseStampedArray output_poses;
-  EXPECT_TRUE(config_->blackboard->get("goals", output_poses));
+  std::vector<geometry_msgs::msg::PoseStamped> output_poses;
+  config_->blackboard->get("goals", output_poses);
 
-  EXPECT_EQ(output_poses.poses.size(), 2u);
-  EXPECT_EQ(output_poses.poses[0], poses.poses[2]);
-  EXPECT_EQ(output_poses.poses[1], poses.poses[3]);
+  EXPECT_EQ(output_poses.size(), 2u);
+  EXPECT_EQ(output_poses[0], poses[2]);
+  EXPECT_EQ(output_poses[1], poses[3]);
 }
 
 int main(int argc, char ** argv)

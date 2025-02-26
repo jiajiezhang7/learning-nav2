@@ -72,7 +72,7 @@ public:
    * @brief Get action name for this navigator
    * @return string Name of action server
    */
-  std::string getName() override {return std::string("navigate_to_pose");}
+  std::string getName() {return std::string("navigate_to_pose");}
 
   /**
    * @brief Get navigator's default BT
@@ -116,9 +116,8 @@ protected:
   /**
    * @brief Goal pose initialization on the blackboard
    * @param goal Action template's goal message to process
-   * @return bool if goal was initialized successfully to be processed
    */
-  bool initializeGoalPose(ActionT::Goal::ConstSharedPtr goal);
+  void initializeGoalPose(ActionT::Goal::ConstSharedPtr goal);
 
   rclcpp::Time start_time_;
 

@@ -32,6 +32,7 @@ class NavigateToPoseAction : public BtActionNode<nav2_msgs::action::NavigateToPo
 {
   using Action = nav2_msgs::action::NavigateToPose;
   using ActionResult = Action::Result;
+  using ActionGoal = Action::Goal;
 
 public:
   /**

@@ -27,7 +27,7 @@ namespace nav2_behavior_tree
 class WouldASmootherRecoveryHelp : public AreErrorCodesPresent
 {
   using Action = nav2_msgs::action::SmoothPath;
-  using ActionResult = Action::Result;
+  using ActionGoal = Action::Goal;
 
 public:
   WouldASmootherRecoveryHelp(

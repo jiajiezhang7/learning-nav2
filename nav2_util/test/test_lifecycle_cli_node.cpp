@@ -79,7 +79,7 @@ public:
 
 RclCppFixture g_rclcppfixture;
 
-TEST(LifecycleCLI, fails_no_node_name)
+TEST(LifeycleCLI, fails_no_node_name)
 {
   Handle handle;
   auto rc = system("ros2 run nav2_util lifecycle_bringup");
@@ -94,7 +94,7 @@ TEST(LifecycleCLI, fails_no_node_name)
   SUCCEED();
 }
 
-TEST(LifecycleCLI, succeeds_node_name)
+TEST(LifeycleCLI, succeeds_node_name)
 {
   Handle handle;
   auto rc = system("ros2 run nav2_util lifecycle_bringup nav2_test_cli");

@@ -16,12 +16,14 @@
 #ifndef NAV2_SMAC_PLANNER__A_STAR_HPP_
 #define NAV2_SMAC_PLANNER__A_STAR_HPP_
 
-#include <functional>
+#include <vector>
+#include <iostream>
+#include <unordered_map>
 #include <memory>
 #include <queue>
-#include <tuple>
 #include <utility>
-#include <vector>
+#include <tuple>
+#include "Eigen/Core"
 
 #include "nav2_costmap_2d/costmap_2d.hpp"
 #include "nav2_core/planner_exceptions.hpp"
@@ -47,13 +49,13 @@ class AStarAlgorithm
 {
 public:
   typedef NodeT * NodePtr;
-  typedef robin_hood::unordered_node_map<uint64_t, NodeT> Graph;
+  typedef robin_hood::unordered_node_map<unsigned int, NodeT> Graph;
   typedef std::vector<NodePtr> NodeVector;
   typedef std::pair<float, NodeBasic<NodeT>> NodeElement;
   typedef typename NodeT::Coordinates Coordinates;
   typedef typename NodeT::CoordinateVector CoordinateVector;
   typedef typename NodeVector::iterator NeighborIterator;
-  typedef std::function<bool (const uint64_t &, NodeT * &)> NodeGetter;
+  typedef std::function<bool (const unsigned int &, NodeT * &)> NodeGetter;
 
   /**
    * @struct nav2_smac_planner::NodeComparator
@@ -86,8 +88,6 @@ public:
    * @param max_on_approach_iterations Maximum number of iterations before returning a valid
    * path once within thresholds to refine path
    * comes at more compute time but smoother paths.
-   * @param terminal_checking_interval Number of iterations to check if the task has been canceled or
-   * or planning time exceeded
    * @param max_planning_time Maximum time (in seconds) to wait for a plan, createPath returns
    * false after this timeout
    */
@@ -95,24 +95,21 @@ public:
     const bool & allow_unknown,
     int & max_iterations,
     const int & max_on_approach_iterations,
-    const int & terminal_checking_interval,
     const double & max_planning_time,
     const float & lookup_table_size,
     const unsigned int & dim_3_size);
 
   /**
    * @brief Creating path from given costmap, start, and goal
-   * @param path Reference to a vector of indices of generated path
+   * @param path Reference to a vector of indicies of generated path
    * @param num_iterations Reference to number of iterations to create plan
    * @param tolerance Reference to tolerance in costmap nodes
-   * @param cancel_checker Function to check if the task has been canceled
    * @param expansions_log Optional expansions logged for debug
    * @return if plan was successful
    */
   bool createPath(
     CoordinateVector & path, int & num_iterations, const float & tolerance,
-    std::function<bool()> cancel_checker,
-    std::vector<std::tuple<float, float, float>> * expansions_log = nullptr);
+    std::vector<std::tuple<float, float>> * expansions_log = nullptr);
 
   /**
    * @brief Sets the collision checker to use
@@ -127,8 +124,8 @@ public:
    * @param dim_3 The node dim_3 index of the goal
    */
   void setGoal(
-    const float & mx,
-    const float & my,
+    const unsigned int & mx,
+    const unsigned int & my,
     const unsigned int & dim_3);
 
   /**
@@ -138,8 +135,8 @@ public:
    * @param dim_3 The node dim_3 index of the goal
    */
   void setStart(
-    const float & mx,
-    const float & my,
+    const unsigned int & mx,
+    const unsigned int & my,
     const unsigned int & dim_3);
 
   /**
@@ -162,7 +159,7 @@ public:
 
   /**
    * @brief Get maximum number of on-approach iterations after within threshold
-   * @return Reference to Maximum on-approach iterations parameter
+   * @return Reference to Maximum on-appraoch iterations parameter
    */
   int & getOnApproachMaxIterations();
 
@@ -208,7 +205,7 @@ protected:
    * @brief Adds node to graph
    * @param index Node index to add
    */
-  inline NodePtr addToGraph(const uint64_t & index);
+  inline NodePtr addToGraph(const unsigned int & index);
 
   /**
    * @brief Check if this node is the goal node
@@ -231,7 +228,7 @@ protected:
   inline bool areInputsValid();
 
   /**
-   * @brief Clear heuristic queue of nodes to search
+   * @brief Clear hueristic queue of nodes to search
    */
   inline void clearQueue();
 
@@ -240,21 +237,12 @@ protected:
    */
   inline void clearGraph();
 
-  inline bool onVisitationCheckNode(const NodePtr & node);
-
-  /**
-   * @brief Populate a debug log of expansions for Hybrid-A* for visualization
-   * @param node Node expanded
-   * @param expansions_log Log to add not expanded to
-   */
-  inline void populateExpansionsLog(
-    const NodePtr & node, std::vector<std::tuple<float, float, float>> * expansions_log);
+  int _timing_interval = 5000;
 
   bool _traverse_unknown;
   bool _is_initialized;
   int _max_iterations;
   int _max_on_approach_iterations;
-  int _terminal_checking_interval;
   double _max_planning_time;
   float _tolerance;
   unsigned int _x_size;

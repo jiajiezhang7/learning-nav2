@@ -19,8 +19,9 @@
  *
  */
 
-#include <cmath>
-#include <cstring>
+#include <math.h>
+#include <stdlib.h>
+#include <string.h>
 #include <queue>
 #include "nav2_amcl/map/map.hpp"
 

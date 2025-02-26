@@ -19,6 +19,7 @@
 #include <string>
 #include <utility>
 
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "nav2_util/geometry_utils.hpp"
 
 namespace nav2_lifecycle_manager

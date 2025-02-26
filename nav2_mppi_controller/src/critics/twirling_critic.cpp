@@ -14,8 +14,6 @@
 
 #include "nav2_mppi_controller/critics/twirling_critic.hpp"
 
-#include <Eigen/Dense>
-
 namespace mppi::critics
 {
 
@@ -24,7 +22,7 @@ void TwirlingCritic::initialize()
   auto getParam = parameters_handler_->getParamGetter(name_);
 
   getParam(power_, "cost_power", 1);
-  getParam(weight_, "cost_weight", 10.0f);
+  getParam(weight_, "cost_weight", 10.0);
 
   RCLCPP_INFO(
     logger_, "TwirlingCritic instantiated with %d power and %f weight.", power_, weight_);
@@ -32,17 +30,15 @@ void TwirlingCritic::initialize()
 
 void TwirlingCritic::score(CriticData & data)
 {
+  using xt::evaluation_strategy::immediate;
   if (!enabled_ ||
-    utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.goal))
+    utils::withinPositionGoalTolerance(data.goal_checker, data.state.pose.pose, data.path))
   {
     return;
   }
 
-  if (power_ > 1u) {
-    data.costs += ((data.state.wz.abs().rowwise().mean()) * weight_).pow(power_).eval();
-  } else {
-    data.costs += ((data.state.wz.abs().rowwise().mean()) * weight_).eval();
-  }
+  const auto wz = xt::abs(data.state.wz);
+  data.costs += xt::pow(xt::mean(wz, {1}, immediate) * weight_, power_);
 }
 
 }  // namespace mppi::critics

@@ -187,7 +187,7 @@ TEST_F(TestNode, testClearingAtMaxRange) {
 }
 
 // Testing fixed scan with robot forward motion
-TEST_F(TestNode, testProbabilisticModelForward) {
+TEST_F(TestNode, testProbabalisticModelForward) {
   geometry_msgs::msg::TransformStamped transform;
   transform.header.stamp = node_->now();
   transform.header.frame_id = "frame";
@@ -240,7 +240,7 @@ TEST_F(TestNode, testProbabilisticModelForward) {
 }
 
 // Testing fixed motion with downward movement
-TEST_F(TestNode, testProbabilisticModelDownward) {
+TEST_F(TestNode, testProbabalisticModelDownward) {
   geometry_msgs::msg::TransformStamped transform;
   transform.header.stamp = node_->now();
   transform.header.frame_id = "frame";

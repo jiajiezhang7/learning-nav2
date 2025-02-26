@@ -23,7 +23,6 @@
 #include "std_msgs/msg/empty.hpp"
 #include "nav2_behaviors/timed_behavior.hpp"
 #include "nav2_msgs/action/assisted_teleop.hpp"
-#include "nav2_util/twist_subscriber.hpp"
 
 namespace nav2_behaviors
 {
@@ -39,7 +38,6 @@ class AssistedTeleop : public TimedBehavior<AssistedTeleopAction>
 
 public:
   using AssistedTeleopActionGoal = AssistedTeleopAction::Goal;
-  using AssistedTeleopActionResult = AssistedTeleopAction::Result;
   AssistedTeleop();
 
   /**
@@ -52,7 +50,7 @@ public:
   /**
    * @brief func to run at the completion of the action
    */
-  void onActionCompletion(std::shared_ptr<AssistedTeleopActionResult>/*result*/) override;
+  void onActionCompletion() override;
 
   /**
    * @brief Loop function to run behavior
@@ -84,6 +82,12 @@ protected:
     double projection_time);
 
   /**
+   * @brief Callback function for velocity subscriber
+   * @param msg received Twist message
+   */
+  void teleopVelocityCallback(const geometry_msgs::msg::Twist::SharedPtr msg);
+
+  /**
    * @brief Callback function to preempt assisted teleop
    * @param msg empty message
    */
@@ -95,11 +99,11 @@ protected:
   double projection_time_;
   double simulation_time_step_;
 
-  geometry_msgs::msg::TwistStamped teleop_twist_;
+  geometry_msgs::msg::Twist teleop_twist_;
   bool preempt_teleop_{false};
 
   // subscribers
-  std::unique_ptr<nav2_util::TwistSubscriber> vel_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr vel_sub_;
   rclcpp::Subscription<std_msgs::msg::Empty>::SharedPtr preempt_teleop_sub_;
 
   rclcpp::Duration command_time_allowance_{0, 0};

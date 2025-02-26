@@ -10,11 +10,11 @@ Dynamically composed bringup (based on  [ROS2 Composition](https://docs.ros.org/
 
 * Some discussions about performance improvement of composed bringup could be found here: https://discourse.ros.org/t/nav2-composition/22175.
 
-To use, please see the Nav2 [Getting Started Page](https://docs.nav2.org/getting_started/index.html) on our documentation website. Additional [tutorials will help you](https://docs.nav2.org/tutorials/index.html) go from an initial setup in simulation to testing on a hardware robot, using SLAM, and more.
+To use, please see the Nav2 [Getting Started Page](https://navigation.ros.org/getting_started/index.html) on our documentation website. Additional [tutorials will help you](https://navigation.ros.org/tutorials/index.html) go from an initial setup in simulation to testing on a hardware robot, using SLAM, and more.
 
 Note:
 * gazebo should be started with both libgazebo_ros_init.so and libgazebo_ros_factory.so to work correctly.
-* spawn_entity node could not remap /tf and /tf_static to tf and tf_static in the launch file yet, used only for multi-robot situations. Instead it should be done as remapping argument <remapping>/tf:=tf</remapping>  <remapping>/tf_static:=tf_static</remapping> under ros2 tag in each plugin which publishes transforms in the SDF file. It is essential to differentiate the tf's of the different robot.
+* spawn_entity node could not remap /tf and /tf_static to tf and tf_static in the launch file yet, used only for multi-robot situations. Instead it should be done as remapping argument <remapping>/tf:=tf</remapping>  <remapping>/tf_static:=tf_static</remapping> under ros2 tag in each plugin which publishs transforms in the SDF file. It is essential to differentiate the tf's of the different robot.
 
 ## Launch
 
@@ -35,7 +35,7 @@ ros2 launch nav2_bringup cloned_multi_tb3_simulation_launch.py robots:="robot1={
 
 #### Unique
 
-There are two robots including name and initial pose are hard-coded in the launch script. Two separated unique robots are required params file (`nav2_multirobot_params_1.yaml`, `nav2_multirobot_params_2.yaml`) for each robot to bring up.
+There are two robots including name and intitial pose are hard-coded in the launch script. Two separated unique robots are required params file (`nav2_multirobot_params_1.yaml`, `nav2_multirobot_params_2.yaml`) for each robot to bring up.
 
 If you want to bringup more than two robots, you should modify the `unique_multi_tb3_simulation_launch.py` script.
 

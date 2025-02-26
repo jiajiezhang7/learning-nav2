@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 #include <pluginlib/class_loader.hpp>
+#include <xtensor/xtensor.hpp>
 
 #include "geometry_msgs/msg/twist.hpp"
 #include "geometry_msgs/msg/twist_stamped.hpp"
@@ -41,7 +42,6 @@ namespace mppi
 class CriticManager
 {
 public:
-  typedef std::vector<std::unique_ptr<critics::CriticFunction>> Critics;
   /**
     * @brief Constructor for mppi::CriticManager
     */
@@ -94,7 +94,7 @@ protected:
   ParametersHandler * parameters_handler_;
   std::vector<std::string> critic_names_;
   std::unique_ptr<pluginlib::ClassLoader<critics::CriticFunction>> loader_;
-  Critics critics_;
+  std::vector<std::unique_ptr<critics::CriticFunction>> critics_;
 
   rclcpp::Logger logger_{rclcpp::get_logger("MPPIController")};
 };

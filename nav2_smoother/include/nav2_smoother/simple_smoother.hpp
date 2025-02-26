@@ -31,7 +31,7 @@
 #include "nav2_util/node_utils.hpp"
 #include "nav_msgs/msg/path.hpp"
 #include "angles/angles.h"
-#include "tf2/utils.hpp"
+#include "tf2/utils.h"
 
 namespace nav2_smoother
 {
@@ -92,8 +92,9 @@ protected:
    * @param reversing_segment Return if this is a reversing segment
    * @param costmap Pointer to minimal costmap
    * @param max_time Maximum time to compute, stop early if over limit
+   * @return If smoothing was successful
    */
-  void smoothImpl(
+  bool smoothImpl(
     nav_msgs::msg::Path & path,
     bool & reversing_segment,
     const nav2_costmap_2d::Costmap2D * costmap,
@@ -113,7 +114,7 @@ protected:
    * @brief Set the field value for a given dimension
    * @param msg Current pose to sample
    * @param dim Dimension ID of interest
-   * @param value to set the dimension to for the pose
+   * @param value to set the dimention to for the pose
    */
   inline void setFieldByDim(
     geometry_msgs::msg::PoseStamped & msg, const unsigned int dim,

@@ -18,7 +18,7 @@
 
 #include <string>
 #include <memory>
-#include <filesystem>
+#include <experimental/filesystem>  // NOLINT
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -29,7 +29,7 @@
 
 #define TEST_DIR TEST_DIRECTORY
 
-using std::filesystem::path;
+using std::experimental::filesystem::path;
 using lifecycle_msgs::msg::Transition;
 using namespace nav2_map_server;  // NOLINT
 
@@ -117,7 +117,7 @@ TEST_F(MapSaverTestFixture, SaveMap)
   RCLCPP_INFO(node_->get_logger(), "Waiting for save_map service");
   ASSERT_TRUE(client->wait_for_service());
 
-  // 1. Send valid save_map service request
+  // 1. Send valid save_map serivce request
   req->map_topic = "map";
   req->map_url = path(g_tmp_dir) / path(g_valid_map_name);
   req->image_format = "png";
@@ -146,7 +146,7 @@ TEST_F(MapSaverTestFixture, SaveMapDefaultParameters)
   RCLCPP_INFO(node_->get_logger(), "Waiting for save_map service");
   ASSERT_TRUE(client->wait_for_service());
 
-  // 1. Send save_map service request with default parameters
+  // 1. Send save_map serivce request with default parameters
   req->map_topic = "";
   req->map_url = path(g_tmp_dir) / path(g_valid_map_name);
   req->image_format = "";
@@ -176,7 +176,7 @@ TEST_F(MapSaverTestFixture, SaveMapInvalidParameters)
   RCLCPP_INFO(node_->get_logger(), "Waiting for save_map service");
   ASSERT_TRUE(client->wait_for_service());
 
-  // 1. Trying to send save_map service request with different sets of parameters
+  // 1. Trying to send save_map serivce request with different sets of parameters
   // In case of map is expected to be saved correctly, verify it
   req->map_topic = "invalid_map";
   req->map_url = path(g_tmp_dir) / path(g_valid_map_name);

@@ -206,7 +206,7 @@ bool Costmap2D::copyWindow(
 
 Costmap2D & Costmap2D::operator=(const Costmap2D & map)
 {
-  // check for self assignment
+  // check for self assignement
   if (this == &map) {
     return *this;
   }
@@ -219,7 +219,6 @@ Costmap2D & Costmap2D::operator=(const Costmap2D & map)
   resolution_ = map.resolution_;
   origin_x_ = map.origin_x_;
   origin_y_ = map.origin_y_;
-  default_value_ = map.default_value_;
 
   // initialize our various maps
   initMaps(size_x_, size_y_);
@@ -290,21 +289,6 @@ bool Costmap2D::worldToMap(double wx, double wy, unsigned int & mx, unsigned int
 
   mx = static_cast<unsigned int>((wx - origin_x_) / resolution_);
   my = static_cast<unsigned int>((wy - origin_y_) / resolution_);
-
-  if (mx < size_x_ && my < size_y_) {
-    return true;
-  }
-  return false;
-}
-
-bool Costmap2D::worldToMapContinuous(double wx, double wy, float & mx, float & my) const
-{
-  if (wx < origin_x_ || wy < origin_y_) {
-    return false;
-  }
-
-  mx = static_cast<float>((wx - origin_x_) / resolution_) + 0.5f;
-  my = static_cast<float>((wy - origin_y_) / resolution_) + 0.5f;
 
   if (mx < size_x_ && my < size_y_) {
     return true;
@@ -400,53 +384,28 @@ bool Costmap2D::setConvexPolygonCost(
   const std::vector<geometry_msgs::msg::Point> & polygon,
   unsigned char cost_value)
 {
-  std::vector<MapLocation> polygon_map_region;
-  polygon_map_region.reserve(100);
-  if (!getMapRegionOccupiedByPolygon(polygon, polygon_map_region)) {
-    return false;
-  }
-
-  // set the cost of those cells
-  setMapRegionOccupiedByPolygon(polygon_map_region, cost_value);
-  return true;
-}
-
-void Costmap2D::setMapRegionOccupiedByPolygon(
-  const std::vector<MapLocation> & polygon_map_region,
-  unsigned char new_cost_value)
-{
-  for (const auto & cell : polygon_map_region) {
-    setCost(cell.x, cell.y, new_cost_value);
-  }
-}
-
-void Costmap2D::restoreMapRegionOccupiedByPolygon(
-  const std::vector<MapLocation> & polygon_map_region)
-{
-  for (const auto & cell : polygon_map_region) {
-    setCost(cell.x, cell.y, cell.cost);
-  }
-}
-
-bool Costmap2D::getMapRegionOccupiedByPolygon(
-  const std::vector<geometry_msgs::msg::Point> & polygon,
-  std::vector<MapLocation> & polygon_map_region)
-{
   // we assume the polygon is given in the global_frame...
   // we need to transform it to map coordinates
   std::vector<MapLocation> map_polygon;
-  for (const auto & cell : polygon) {
+  for (unsigned int i = 0; i < polygon.size(); ++i) {
     MapLocation loc;
-    if (!worldToMap(cell.x, cell.y, loc.x, loc.y)) {
+    if (!worldToMap(polygon[i].x, polygon[i].y, loc.x, loc.y)) {
       // ("Polygon lies outside map bounds, so we can't fill it");
       return false;
     }
     map_polygon.push_back(loc);
   }
 
-  // get the cells that fill the polygon
-  convexFillCells(map_polygon, polygon_map_region);
+  std::vector<MapLocation> polygon_cells;
 
+  // get the cells that fill the polygon
+  convexFillCells(map_polygon, polygon_cells);
+
+  // set the cost of those cells
+  for (unsigned int i = 0; i < polygon_cells.size(); ++i) {
+    unsigned int index = getIndex(polygon_cells[i].x, polygon_cells[i].y);
+    costmap_[index] = cost_value;
+  }
   return true;
 }
 
@@ -531,7 +490,6 @@ void Costmap2D::convexFillCells(
     for (unsigned int y = min_pt.y; y <= max_pt.y; ++y) {
       pt.x = x;
       pt.y = y;
-      pt.cost = getCost(x, y);
       polygon_cells.push_back(pt);
     }
   }

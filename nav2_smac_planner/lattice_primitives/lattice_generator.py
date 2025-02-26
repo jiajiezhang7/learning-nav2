@@ -31,7 +31,7 @@ class LatticeGenerator:
     Handles all the logic for computing the minimal control set.
 
     Computes the minimal control set for a vehicle given its parameters.
-    Includes handling the propagating and searching along wavefronts as
+    Includes handling the propogating and searching along wavefronts as
     well as determining if a trajectory is part of the minimal set based
     on previously added trajectories.
     """
@@ -57,7 +57,8 @@ class LatticeGenerator:
         self.turning_radius = config['turning_radius']
         self.stopping_threshold = config['stopping_threshold']
         self.num_of_headings = config['num_of_headings']
-        self.headings = self._get_heading_discretization(config['num_of_headings'])
+        self.headings = \
+            self._get_heading_discretization(config['num_of_headings'])
 
         self.motion_model = self.MotionModel[config['motion_model'].upper()]
 
@@ -169,7 +170,7 @@ class LatticeGenerator:
         self, trajectory: Trajectory, prior_end_poses: index.Rtree
     ) -> bool:
         """
-        Determine whether a trajectory is a minimal trajectory.
+        Determine wheter a trajectory is a minimal trajectory.
 
         Uses an RTree for speedup.
 
@@ -566,7 +567,8 @@ class LatticeGenerator:
             return omni_spanning_set
 
         else:
-            print('No handling implemented for Motion Model: ' + f'{self.motion_model}')
+            print('No handling implemented for Motion Model: ' +
+                  f'{self.motion_model}')
             raise NotImplementedError
 
     def _add_in_place_turns(self, spanning_set: dict) -> dict:

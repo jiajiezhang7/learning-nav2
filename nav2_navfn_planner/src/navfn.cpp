@@ -44,7 +44,6 @@
 #include "nav2_navfn_planner/navfn.hpp"
 
 #include <algorithm>
-#include "nav2_core/planner_exceptions.hpp"
 #include "rclcpp/rclcpp.hpp"
 
 namespace nav2_navfn_planner
@@ -294,12 +293,12 @@ NavFn::setCostmap(const COSTTYPE * cmap, bool isROS, bool allow_unknown)
 }
 
 bool
-NavFn::calcNavFnDijkstra(std::function<bool()> cancelChecker, bool atStart)
+NavFn::calcNavFnDijkstra(bool atStart)
 {
   setupNavFn(true);
 
   // calculate the nav fn and path
-  return propNavFnDijkstra(std::max(nx * ny / 20, nx + ny), cancelChecker, atStart);
+  return propNavFnDijkstra(std::max(nx * ny / 20, nx + ny), atStart);
 }
 
 
@@ -308,12 +307,12 @@ NavFn::calcNavFnDijkstra(std::function<bool()> cancelChecker, bool atStart)
 //
 
 bool
-NavFn::calcNavFnAstar(std::function<bool()> cancelChecker)
+NavFn::calcNavFnAstar()
 {
   setupNavFn(true);
 
   // calculate the nav fn and path
-  return propNavFnAstar(std::max(nx * ny / 20, nx + ny), cancelChecker);
+  return propNavFnAstar(std::max(nx * ny / 20, nx + ny));
 }
 
 //
@@ -326,14 +325,14 @@ int NavFn::getPathLen() {return npath;}
 
 // inserting onto the priority blocks
 #define push_cur(n)  {if (n >= 0 && n < ns && !pending[n] && \
-  costarr[n] < COST_OBS && curPe < PRIORITYBUFSIZE) \
-  {curP[curPe++] = n; pending[n] = true;}}
+      costarr[n] < COST_OBS && curPe < PRIORITYBUFSIZE) \
+    {curP[curPe++] = n; pending[n] = true;}}
 #define push_next(n) {if (n >= 0 && n < ns && !pending[n] && \
-  costarr[n] < COST_OBS && nextPe < PRIORITYBUFSIZE) \
-  {nextP[nextPe++] = n; pending[n] = true;}}
+      costarr[n] < COST_OBS && nextPe < PRIORITYBUFSIZE) \
+    {nextP[nextPe++] = n; pending[n] = true;}}
 #define push_over(n) {if (n >= 0 && n < ns && !pending[n] && \
-  costarr[n] < COST_OBS && overPe < PRIORITYBUFSIZE) \
-  {overP[overPe++] = n; pending[n] = true;}}
+      costarr[n] < COST_OBS && overPe < PRIORITYBUFSIZE) \
+    {overP[overPe++] = n; pending[n] = true;}}
 
 
 // Set up navigation potential arrays for new propagation
@@ -572,7 +571,7 @@ NavFn::updateCellAstar(int n)
 //
 
 bool
-NavFn::propNavFnDijkstra(int cycles, std::function<bool()> cancelChecker, bool atStart)
+NavFn::propNavFnDijkstra(int cycles, bool atStart)
 {
   int nwv = 0;  // max priority block size
   int nc = 0;  // number of cells put into priority blocks
@@ -582,10 +581,6 @@ NavFn::propNavFnDijkstra(int cycles, std::function<bool()> cancelChecker, bool a
   int startCell = start[1] * nx + start[0];
 
   for (; cycle < cycles; cycle++) {  // go for this many cycles, unless interrupted
-    if (cycle % terminal_checking_interval == 0 && cancelChecker()) {
-      throw nav2_core::PlannerCancelled("Planner was cancelled");
-    }
-
     if (curPe == 0 && nextPe == 0) {  // priority blocks empty
       break;
     }
@@ -657,7 +652,7 @@ NavFn::propNavFnDijkstra(int cycles, std::function<bool()> cancelChecker, bool a
 //
 
 bool
-NavFn::propNavFnAstar(int cycles, std::function<bool()> cancelChecker)
+NavFn::propNavFnAstar(int cycles)
 {
   int nwv = 0;  // max priority block size
   int nc = 0;  // number of cells put into priority blocks
@@ -672,10 +667,6 @@ NavFn::propNavFnAstar(int cycles, std::function<bool()> cancelChecker)
 
   // do main cycle
   for (; cycle < cycles; cycle++) {  // go for this many cycles, unless interrupted
-    if (cycle % terminal_checking_interval == 0 && cancelChecker()) {
-      throw nav2_core::PlannerCancelled("Planner was cancelled");
-    }
-
     if (curPe == 0 && nextPe == 0) {  // priority blocks empty
       break;
     }

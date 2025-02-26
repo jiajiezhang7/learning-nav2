@@ -30,6 +30,7 @@ namespace nav2_behavior_tree
 class AssistedTeleopAction : public BtActionNode<nav2_msgs::action::AssistedTeleop>
 {
   using Action = nav2_msgs::action::AssistedTeleop;
+  using ActionGoal = Action::Goal;
   using ActionResult = Action::Result;
 
 public:
@@ -63,11 +64,6 @@ public:
    * @brief Function to perform some user-defined operation upon cancellation of the action
    */
   BT::NodeStatus on_cancelled() override;
-
-  /**
-   * @brief Function to read parameters and initialize class variables
-   */
-  void initialize();
 
   /**
    * @brief Creates list of BT ports

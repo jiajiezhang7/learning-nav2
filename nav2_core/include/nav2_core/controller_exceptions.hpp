@@ -69,13 +69,6 @@ public:
   : ControllerException(description) {}
 };
 
-class ControllerTimedOut : public ControllerException
-{
-public:
-  explicit ControllerTimedOut(const std::string & description)
-  : ControllerException(description) {}
-};
-
 }  // namespace nav2_core
 
 #endif  // NAV2_CORE__CONTROLLER_EXCEPTIONS_HPP_

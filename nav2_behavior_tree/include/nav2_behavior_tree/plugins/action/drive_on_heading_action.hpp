@@ -29,7 +29,8 @@ namespace nav2_behavior_tree
 class DriveOnHeadingAction : public BtActionNode<nav2_msgs::action::DriveOnHeading>
 {
   using Action = nav2_msgs::action::DriveOnHeading;
-  using ActionResult = Action::Result;
+  using ActionGoal = Action::Goal;
+  using ActionResult = Action::Goal;
 
 public:
   /**
@@ -44,11 +45,6 @@ public:
     const BT::NodeConfiguration & conf);
 
   /**
-   * @brief Function to read parameters and initialize class variables
-   */
-  void initialize();
-
-  /**
    * @brief Creates list of BT ports
    * @return BT::PortsList Containing basic ports along with node-specific ports
    */
@@ -59,16 +55,10 @@ public:
         BT::InputPort<double>("dist_to_travel", 0.15, "Distance to travel"),
         BT::InputPort<double>("speed", 0.025, "Speed at which to travel"),
         BT::InputPort<double>("time_allowance", 10.0, "Allowed time for driving on heading"),
-        BT::InputPort<bool>("disable_collision_checks", false, "Disable collision checking"),
         BT::OutputPort<Action::Result::_error_code_type>(
           "error_code_id", "The drive on heading behavior server error code")
       });
   }
-
-  /**
- * @brief Function to perform some user-defined operation on tick
- */
-  void on_tick() override;
 
   /**
  * @brief Function to perform some user-defined operation upon successful completion of the action
@@ -84,9 +74,6 @@ public:
    * @brief Function to perform some user-defined operation upon cancellation of the action
    */
   BT::NodeStatus on_cancelled() override;
-
-private:
-  bool initialized_;
 };
 
 }  // namespace nav2_behavior_tree

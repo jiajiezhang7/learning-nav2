@@ -54,7 +54,7 @@ WaypointFollower::~WaypointFollower()
 }
 
 nav2_util::CallbackReturn
-WaypointFollower::on_configure(const rclcpp_lifecycle::State & state)
+WaypointFollower::on_configure(const rclcpp_lifecycle::State & /*state*/)
 {
   RCLCPP_INFO(get_logger(), "Configuring");
 
@@ -78,7 +78,8 @@ WaypointFollower::on_configure(const rclcpp_lifecycle::State & state)
     get_node_waitables_interface(),
     "navigate_to_pose", callback_group_);
 
-  double action_server_result_timeout = get_parameter("action_server_result_timeout").as_double();
+  double action_server_result_timeout;
+  get_parameter("action_server_result_timeout", action_server_result_timeout);
   rcl_action_server_options_t server_options = rcl_action_server_get_default_options();
   server_options.result_timeout.nanoseconds = RCL_S_TO_NS(action_server_result_timeout);
 
@@ -123,7 +124,6 @@ WaypointFollower::on_configure(const rclcpp_lifecycle::State & state)
     RCLCPP_FATAL(
       get_logger(),
       "Failed to create waypoint_task_executor. Exception: %s", e.what());
-    on_cleanup(state);
   }
 
   return nav2_util::CallbackReturn::SUCCESS;
@@ -155,7 +155,6 @@ WaypointFollower::on_deactivate(const rclcpp_lifecycle::State & /*state*/)
 
   xyz_action_server_->deactivate();
   gps_action_server_->deactivate();
-  remove_on_set_parameters_callback(dyn_params_handler_.get());
   dyn_params_handler_.reset();
   // destroy bond connection
   destroyBond();
@@ -188,21 +187,15 @@ std::vector<geometry_msgs::msg::PoseStamped> WaypointFollower::getLatestGoalPose
   const T & action_server)
 {
   std::vector<geometry_msgs::msg::PoseStamped> poses;
-  const auto current_goal = action_server->get_current_goal();
-
-  if (!current_goal) {
-    RCLCPP_ERROR(get_logger(), "No current action goal found!");
-    return poses;
-  }
 
   // compile time static check to decide which block of code to be built
   if constexpr (std::is_same<T, std::unique_ptr<ActionServer>>::value) {
     // If normal waypoint following callback was called, we build here
-    poses = current_goal->poses;
+    poses = action_server->get_current_goal()->poses;
   } else {
     // If GPS waypoint following callback was called, we build here
     poses = convertGPSPosesToMapPoses(
-      current_goal->gps_poses);
+      action_server->get_current_goal()->gps_poses);
   }
   return poses;
 }
@@ -336,7 +329,7 @@ void WaypointFollower::followWaypointsHandler(
         missedWaypoint.index = goal_index;
         missedWaypoint.goal = poses[goal_index];
         missedWaypoint.error_code =
-          nav2_msgs::action::FollowWaypoints::Result::TASK_EXECUTOR_FAILED;
+          nav2_msgs::action::FollowWaypoints::Goal::TASK_EXECUTOR_FAILED;
         result->missed_waypoints.push_back(missedWaypoint);
       }
       // if task execution was failed and stop_on_failure_ is on , terminate action

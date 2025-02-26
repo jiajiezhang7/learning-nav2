@@ -81,7 +81,7 @@ void morphologyOperation(
 
 using ShapeBuffer3x3 = std::array<uint8_t, 9>;  // NOLINT
 inline Image<uint8_t> createShape(ShapeBuffer3x3 & buffer, ConnectivityType connectivity);
-}  // namespace imgproc_impl
+} // namespace imgproc_impl
 
 /**
  * @brief Perform morphological dilation
@@ -990,10 +990,9 @@ private:
     const IsBg & is_background) const
   {
     // Creates an image labels in which each obstacles group is labeled with a unique code
-    Label groups_count;
-    auto labels = connectedComponents<connectivity>(
-      image, buffer, label_trees,
-      is_background, groups_count);
+    auto components = connectedComponents<connectivity>(image, buffer, label_trees, is_background);
+    const Label groups_count = components.second;
+    const Image<Label> & labels = components.first;
 
     // Calculates the size of each group.
     // Group size is equal to the number of pixels with the same label
@@ -1034,27 +1033,24 @@ private:
 }  // namespace imgproc_impl
 
 template<ConnectivityType connectivity, class Label, class IsBg>
-Image<Label> connectedComponents(
+std::pair<Image<Label>, Label> connectedComponents(
   const Image<uint8_t> & image, MemoryBuffer & buffer,
-  imgproc_impl::EquivalenceLabelTrees<Label> & label_trees,
-  const IsBg & is_background,
-  Label & total_labels)
+  imgproc_impl::EquivalenceLabelTrees<Label> & label_trees, const IsBg & is_background)
 {
   using namespace imgproc_impl;  // NOLINT
   const size_t pixels = image.rows() * image.columns();
 
   if (pixels == 0) {
-    total_labels = 0;
-    return Image<Label>{};
+    return {Image<Label>{}, 0};
   }
 
   Label * image_buffer = buffer.get<Label>(pixels);
   Image<Label> labels(image.rows(), image.columns(), image_buffer, image.columns());
   label_trees.reset(image.rows(), image.columns(), connectivity);
-  total_labels = connectedComponentsImpl<connectivity>(
+  const Label total_labels = connectedComponentsImpl<connectivity>(
     image, labels, label_trees,
     is_background);
-  return labels;
+  return std::make_pair(labels, total_labels);
 }
 
 }  // namespace nav2_costmap_2d

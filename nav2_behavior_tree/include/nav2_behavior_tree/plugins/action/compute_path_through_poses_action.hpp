@@ -34,6 +34,7 @@ class ComputePathThroughPosesAction
 {
   using Action = nav2_msgs::action::ComputePathThroughPoses;
   using ActionResult = Action::Result;
+  using ActionGoal = Action::Goal;
 
 public:
   /**
@@ -63,7 +64,7 @@ public:
   BT::NodeStatus on_aborted() override;
 
   /**
-   * @brief Function to perform some user-defined operation upon cancellation of the action
+   * @brief Function to perform some user-defined operation upon cancelation of the action
    */
   BT::NodeStatus on_cancelled() override;
 
@@ -75,7 +76,7 @@ public:
   {
     return providedBasicPorts(
       {
-        BT::InputPort<geometry_msgs::msg::PoseStampedArray>(
+        BT::InputPort<std::vector<geometry_msgs::msg::PoseStamped>>(
           "goals",
           "Destinations to plan through"),
         BT::InputPort<geometry_msgs::msg::PoseStamped>(

@@ -12,13 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
 #include <chrono>
 #include <memory>
-#include <string>
-
-#include "rclcpp/rclcpp.hpp"
-#include "tf2/time.hpp"
-#include "tf2_ros/buffer.h"
 
 #include "nav2_behavior_tree/plugins/condition/transform_available_condition.hpp"
 
@@ -35,15 +31,7 @@ TransformAvailableCondition::TransformAvailableCondition(
 {
   node_ = config().blackboard->get<rclcpp::Node::SharedPtr>("node");
   tf_ = config().blackboard->get<std::shared_ptr<tf2_ros::Buffer>>("tf_buffer");
-}
 
-TransformAvailableCondition::~TransformAvailableCondition()
-{
-  RCLCPP_DEBUG(node_->get_logger(), "Shutting down TransformAvailableCondition BT node");
-}
-
-void TransformAvailableCondition::initialize()
-{
   getInput("child", child_frame_);
   getInput("parent", parent_frame_);
 
@@ -57,12 +45,13 @@ void TransformAvailableCondition::initialize()
   RCLCPP_DEBUG(node_->get_logger(), "Initialized an TransformAvailableCondition BT node");
 }
 
+TransformAvailableCondition::~TransformAvailableCondition()
+{
+  RCLCPP_DEBUG(node_->get_logger(), "Shutting down TransformAvailableCondition BT node");
+}
+
 BT::NodeStatus TransformAvailableCondition::tick()
 {
-  if (!BT::isStatusActive(status())) {
-    initialize();
-  }
-
   if (was_found_) {
     return BT::NodeStatus::SUCCESS;
   }
@@ -85,7 +74,7 @@ BT::NodeStatus TransformAvailableCondition::tick()
 
 }  // namespace nav2_behavior_tree
 
-#include "behaviortree_cpp/bt_factory.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
 BT_REGISTER_NODES(factory)
 {
   factory.registerNodeType<nav2_behavior_tree::TransformAvailableCondition>("TransformAvailable");

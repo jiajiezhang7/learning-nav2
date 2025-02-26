@@ -19,8 +19,9 @@
  *
  */
 
-#include <cassert>
-#include <cmath>
+
+#include <math.h>
+#include <assert.h>
 
 #include "nav2_amcl/sensors/laser/laser.hpp"
 

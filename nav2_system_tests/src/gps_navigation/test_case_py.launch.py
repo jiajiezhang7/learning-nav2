@@ -14,7 +14,6 @@
 # limitations under the License.
 
 import os
-from pathlib import Path
 import sys
 
 from ament_index_python.packages import get_package_share_directory
@@ -22,7 +21,6 @@ from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch import LaunchService
 from launch.actions import (
-    AppendEnvironmentVariable,
     ExecuteProcess,
     IncludeLaunchDescription,
     SetEnvironmentVariable,
@@ -35,82 +33,79 @@ from nav2_common.launch import RewrittenYaml
 
 
 def generate_launch_description():
-    sim_dir = get_package_share_directory('nav2_minimal_tb3_sim')
-    nav2_bringup_dir = get_package_share_directory('nav2_bringup')
+    world = os.getenv("TEST_WORLD")
 
-    world_sdf_xacro = os.path.join(sim_dir, 'worlds', 'tb3_empty_world.sdf.xacro')
-    robot_sdf = os.path.join(sim_dir, 'urdf', 'gz_waffle_gps.sdf.xacro')
-
-    urdf = os.path.join(sim_dir, 'urdf', 'turtlebot3_waffle_gps.urdf')
-
-    with open(urdf, 'r') as infp:
-        robot_description = infp.read()
-
-    # use local param file
     launch_dir = os.path.dirname(os.path.realpath(__file__))
-    params_file = os.path.join(launch_dir, 'nav2_no_map_params.yaml')
+    params_file = os.path.join(launch_dir, "nav2_no_map_params.yaml")
+    bringup_dir = get_package_share_directory("nav2_bringup")
 
     configured_params = RewrittenYaml(
-        source_file=params_file,
-        root_key='',
-        param_rewrites='',
-        convert_types=True,
+        source_file=params_file, root_key="", param_rewrites="", convert_types=True
     )
 
     return LaunchDescription(
         [
-            SetEnvironmentVariable('RCUTILS_LOGGING_BUFFERED_STREAM', '1'),
-            SetEnvironmentVariable('RCUTILS_LOGGING_USE_STDOUT', '1'),
-            AppendEnvironmentVariable(
-                'GZ_SIM_RESOURCE_PATH', os.path.join(sim_dir, 'models')
-            ),
-            AppendEnvironmentVariable(
-                'GZ_SIM_RESOURCE_PATH',
-                str(Path(os.path.join(sim_dir)).parent.resolve()),
-            ),
+            SetEnvironmentVariable("RCUTILS_LOGGING_BUFFERED_STREAM", "1"),
+            SetEnvironmentVariable("RCUTILS_LOGGING_USE_STDOUT", "1"),
+            # Launch gazebo server for simulation
             ExecuteProcess(
-                cmd=['gz', 'sim', '-r', '-s', world_sdf_xacro],
-                output='screen',
+                cmd=[
+                    "gzserver",
+                    "-s",
+                    "libgazebo_ros_init.so",
+                    "--minimal_comms",
+                    world,
+                ],
+                output="screen",
             ),
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource(
-                    os.path.join(sim_dir, 'launch', 'spawn_tb3_gps.launch.py')
-                ),
-                launch_arguments={
-                    'use_sim_time': 'True',
-                    'robot_sdf': robot_sdf,
-                    'x_pose': '0.0',
-                    'y_pose': '0.0',
-                    'z_pose': '0.0',
-                    'roll': '0.0',
-                    'pitch': '0.0',
-                    'yaw': '0.0',
-                }.items(),
+            # TODO(orduno) Launch the robot state publisher instead
+            #              using a local copy of TB3 urdf file
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=["0", "0", "0", "0", "0", "0", "base_footprint", "base_link"],
             ),
             Node(
-                package='robot_state_publisher',
-                executable='robot_state_publisher',
-                name='robot_state_publisher',
-                output='screen',
-                parameters=[
-                    {'use_sim_time': True, 'robot_description': robot_description}
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=["0", "0", "0", "0", "0", "0", "base_link", "base_scan"],
+            ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=[
+                    "-0.32",
+                    "0",
+                    "0.068",
+                    "0",
+                    "0",
+                    "0",
+                    "base_link",
+                    "imu_link",
                 ],
+            ),
+            Node(
+                package="tf2_ros",
+                executable="static_transform_publisher",
+                output="screen",
+                arguments=["0", "0", "0", "0", "0", "0", "base_link", "gps_link"],
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
-                    os.path.join(nav2_bringup_dir, 'launch', 'navigation_launch.py')
+                    os.path.join(bringup_dir, "launch", "navigation_launch.py")
                 ),
                 launch_arguments={
-                    'namespace': '',
-                    'use_sim_time': 'True',
-                    'params_file': configured_params,
-                    'use_composition': 'False',
-                    'autostart': 'True',
+                    "use_sim_time": "True",
+                    "params_file": configured_params,
+                    "autostart": "True",
                 }.items(),
             ),
             IncludeLaunchDescription(
                 PythonLaunchDescriptionSource(
-                    os.path.join(launch_dir, 'dual_ekf_navsat.launch.py')
+                    os.path.join(launch_dir, "dual_ekf_navsat.launch.py")
                 ),
             ),
         ]
@@ -121,18 +116,17 @@ def main(argv=sys.argv[1:]):
     ld = generate_launch_description()
 
     test1_action = ExecuteProcess(
-        cmd=[os.path.join(os.getenv('TEST_DIR'), 'tester.py')],
-        name='tester_node',
-        output='screen',
+        cmd=[os.path.join(os.getenv("TEST_DIR"), "tester.py")],
+        name="tester_node",
+        output="screen",
     )
 
     lts = LaunchTestService()
     lts.add_test_action(ld, test1_action)
     ls = LaunchService(argv=argv)
     ls.include_launch_description(ld)
-    return_code = lts.run(ls)
-    return return_code
+    return lts.run(ls)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

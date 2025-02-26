@@ -150,9 +150,6 @@ public:
     std::lock_guard<std::recursive_mutex> lock(update_mutex_);
 
     if (!server_active_) {
-      RCLCPP_INFO(
-        node_logging_interface_->get_logger(),
-        "Action server is inactive. Rejecting the goal.");
       return rclcpp_action::GoalResponse::REJECT;
     }
 
@@ -289,7 +286,7 @@ public:
   }
 
   /**
-   * @brief Deactivate action server
+   * @brief Deactive action server
    */
   void deactivate()
   {
@@ -585,7 +582,7 @@ protected:
 
     if (is_active(handle)) {
       if (handle->is_canceling()) {
-        info_msg("Client requested to cancel the goal. Cancelling.");
+        warn_msg("Client requested to cancel the goal. Cancelling.");
         handle->canceled(result);
       } else {
         warn_msg("Aborting handle.");

@@ -15,8 +15,6 @@
 #ifndef NAV2_BEHAVIOR_TREE__BT_ACTION_SERVER_HPP_
 #define NAV2_BEHAVIOR_TREE__BT_ACTION_SERVER_HPP_
 
-#include <chrono>
-#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -26,8 +24,6 @@
 #include "nav2_behavior_tree/ros_topic_logger.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav2_util/simple_action_server.hpp"
-#include "rclcpp/rclcpp.hpp"
-#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace nav2_behavior_tree
 {
@@ -181,11 +177,10 @@ public:
   /**
    * @brief Function to halt the current tree. It will interrupt the execution of RUNNING nodes
    * by calling their halt() implementation (only for Async nodes that may return RUNNING)
-   * This should already done for all the exit states of the action but preemption
    */
   void haltTree()
   {
-    tree_.haltTree();
+    tree_.rootNode()->halt();
   }
 
 protected:
@@ -218,7 +213,7 @@ protected:
   // The blackboard shared by all of the nodes in the tree
   BT::Blackboard::Ptr blackboard_;
 
-  // The XML file that contains the Behavior Tree to create
+  // The XML file that cointains the Behavior Tree to create
   std::string current_bt_xml_filename_;
   std::string default_bt_xml_filename_;
 

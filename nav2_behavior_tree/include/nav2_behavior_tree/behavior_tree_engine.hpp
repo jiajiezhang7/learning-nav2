@@ -20,11 +20,11 @@
 #include <string>
 #include <vector>
 
-#include "behaviortree_cpp/behavior_tree.h"
-#include "behaviortree_cpp/bt_factory.h"
-#include "behaviortree_cpp/xml_parsing.h"
+#include "behaviortree_cpp_v3/behavior_tree.h"
+#include "behaviortree_cpp_v3/bt_factory.h"
+#include "behaviortree_cpp_v3/xml_parsing.h"
+#include "behaviortree_cpp_v3/loggers/bt_zmq_publisher.h"
 
-#include "rclcpp/rclcpp.hpp"
 
 namespace nav2_behavior_tree
 {
@@ -46,9 +46,7 @@ public:
    * @brief A constructor for nav2_behavior_tree::BehaviorTreeEngine
    * @param plugin_libraries vector of BT plugin library names to load
    */
-  explicit BehaviorTreeEngine(
-    const std::vector<std::string> & plugin_libraries,
-    rclcpp::Node::SharedPtr node);
+  explicit BehaviorTreeEngine(const std::vector<std::string> & plugin_libraries);
   virtual ~BehaviorTreeEngine() {}
 
   /**
@@ -87,16 +85,13 @@ public:
 
   /**
    * @brief Function to explicitly reset all BT nodes to initial state
-   * @param tree Tree to halt
+   * @param root_node Pointer to BT root node
    */
-  void haltAllActions(BT::Tree & tree);
+  void haltAllActions(BT::TreeNode * root_node);
 
 protected:
   // The factory that will be used to dynamically construct the behavior tree
   BT::BehaviorTreeFactory factory_;
-
-  // Clock
-  rclcpp::Clock::SharedPtr clock_;
 };
 
 }  // namespace nav2_behavior_tree

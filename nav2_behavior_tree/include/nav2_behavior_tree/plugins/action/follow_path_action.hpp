@@ -31,6 +31,7 @@ class FollowPathAction : public BtActionNode<nav2_msgs::action::FollowPath>
 {
   using Action = nav2_msgs::action::FollowPath;
   using ActionResult = Action::Result;
+  using ActionGoal = Action::Goal;
 
 public:
   /**

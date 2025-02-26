@@ -31,7 +31,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "rviz_common/panel.hpp"
-#include "rviz_common/ros_integration/ros_node_abstraction_iface.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 #include "visualization_msgs/msg/marker_array.hpp"
 #include "nav2_util/geometry_utils.hpp"
@@ -93,16 +92,13 @@ private:
   std::string loop_no_ = "0";
   std::string base_frame_;
 
-  // The Node pointer that we need to keep alive for the duration of this plugin.
-  std::shared_ptr<rviz_common::ros_integration::RosNodeAbstractionIface> node_ptr_;
-
   // Call to send NavigateToPose action request for goal poses
   geometry_msgs::msg::PoseStamped convert_to_msg(
     std::vector<double> pose,
     std::vector<double> orientation);
   void startWaypointFollowing(std::vector<geometry_msgs::msg::PoseStamped> poses);
   void startNavigation(geometry_msgs::msg::PoseStamped);
-  void startNavThroughPoses(geometry_msgs::msg::PoseStampedArray poses);
+  void startNavThroughPoses(std::vector<geometry_msgs::msg::PoseStamped> poses);
   using NavigationGoalHandle =
     rclcpp_action::ClientGoalHandle<nav2_msgs::action::NavigateToPose>;
   using WaypointFollowerGoalHandle =
@@ -113,7 +109,7 @@ private:
   // The (non-spinning) client node used to invoke the action client
   rclcpp::Node::SharedPtr client_node_;
 
-  // Timeout value when waiting for action servers to respond
+  // Timeout value when waiting for action servers to respnd
   std::chrono::milliseconds server_timeout_;
 
   // A timer used to check on the completion status of the action
@@ -182,6 +178,7 @@ private:
   QState * paused_wp_{nullptr};
   QState * resumed_wp_{nullptr};
 
+  QImage * image_{nullptr};
   QLabel * imgDisplayLabel_{nullptr};
 
   // The following states are added to allow for the state of the button to only expose reset
@@ -196,8 +193,8 @@ private:
   QState * accumulated_wp_{nullptr};
   QState * accumulated_nav_through_poses_{nullptr};
 
-  geometry_msgs::msg::PoseStampedArray acummulated_poses_;
-  geometry_msgs::msg::PoseStampedArray store_poses_;
+  std::vector<geometry_msgs::msg::PoseStamped> acummulated_poses_;
+  std::vector<geometry_msgs::msg::PoseStamped> store_poses_;
 
   // Publish the visual markers with the waypoints
   void updateWpNavigationMarkers();
@@ -206,6 +203,10 @@ private:
   int getUniqueId();
 
   void resetUniqueId();
+
+  // create label string from goal status msg
+  static inline QString getGoalStatusLabel(
+    int8_t status = action_msgs::msg::GoalStatus::STATUS_UNKNOWN);
 
   // create label string from feedback msg
   static inline QString getNavToPoseFeedbackLabel(

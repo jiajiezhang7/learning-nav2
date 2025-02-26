@@ -45,6 +45,7 @@ public:
     costmap_ros_ = std::make_shared<nav2_costmap_2d::Costmap2DROS>(
       name_,
       std::string{get_namespace()},
+      name_,
       get_parameter("use_sim_time").as_bool());
     costmap_thread_ = std::make_unique<nav2_util::NodeThread>(costmap_ros_);
 
@@ -161,7 +162,7 @@ TEST_F(CostmapRosTestFixture, costmap_pub_test)
   auto costmap_raw = future.get();
 
   // Check first 20 cells of the 10by10 map
-  ASSERT_EQ(costmap_raw->data.size(), 100u);
+  ASSERT_TRUE(costmap_raw->data.size() == 100);
   unsigned int i = 0;
   for (; i < 7; ++i) {
     EXPECT_EQ(costmap_raw->data.at(i), nav2_costmap_2d::FREE_SPACE);

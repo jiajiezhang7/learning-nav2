@@ -86,11 +86,8 @@ void VoxelLayer::onInitialize()
   node->get_parameter(name_ + "." + "z_resolution", z_resolution_);
   node->get_parameter(name_ + "." + "unknown_threshold", unknown_threshold_);
   node->get_parameter(name_ + "." + "mark_threshold", mark_threshold_);
+  node->get_parameter(name_ + "." + "combination_method", combination_method_);
   node->get_parameter(name_ + "." + "publish_voxel_map", publish_voxel_);
-
-  int combination_method_param{};
-  node->get_parameter(name_ + "." + "combination_method", combination_method_param);
-  combination_method_ = combination_method_from_int(combination_method_param);
 
   auto custom_qos = rclcpp::QoS(rclcpp::KeepLast(1)).transient_local().reliable();
 
@@ -116,10 +113,6 @@ void VoxelLayer::onInitialize()
 
 VoxelLayer::~VoxelLayer()
 {
-  auto node = node_.lock();
-  if (dyn_params_handler_ && node) {
-    node->remove_on_set_parameters_callback(dyn_params_handler_.get());
-  }
   dyn_params_handler_.reset();
 }
 
@@ -319,7 +312,7 @@ void VoxelLayer::raytraceFreespace(
   sensor_msgs::PointCloud2Iterator<float> clearing_endpoints_iter_y(*clearing_endpoints_, "y");
   sensor_msgs::PointCloud2Iterator<float> clearing_endpoints_iter_z(*clearing_endpoints_, "z");
 
-  // we can pre-compute the endpoints of the map outside of the inner loop... we'll need these later
+  // we can pre-compute the enpoints of the map outside of the inner loop... we'll need these later
   double map_end_x = origin_x_ + getSizeInMetersX();
   double map_end_y = origin_y_ + getSizeInMetersY();
   double map_end_z = origin_z_ + getSizeInMetersZ();
@@ -422,7 +415,7 @@ void VoxelLayer::updateOrigin(double new_origin_x, double new_origin_y)
   cell_oy = static_cast<int>((new_origin_y - origin_y_) / resolution_);
 
   // compute the associated world coordinates for the origin cell
-  // because we want to keep things grid-aligned
+  // beacuase we want to keep things grid-aligned
   double new_grid_ox, new_grid_oy;
   new_grid_ox = origin_x_ + cell_ox * resolution_;
   new_grid_oy = origin_y_ + cell_oy * resolution_;
@@ -529,7 +522,7 @@ VoxelLayer::dynamicParametersCallback(
       } else if (param_name == name_ + "." + "mark_threshold") {
         mark_threshold_ = parameter.as_int();
       } else if (param_name == name_ + "." + "combination_method") {
-        combination_method_ = combination_method_from_int(parameter.as_int());
+        combination_method_ = parameter.as_int();
       }
     }
   }

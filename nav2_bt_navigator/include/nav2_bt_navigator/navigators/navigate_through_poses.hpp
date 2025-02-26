@@ -21,7 +21,6 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rclcpp_action/rclcpp_action.hpp"
 #include "geometry_msgs/msg/pose_stamped.hpp"
-#include "geometry_msgs/msg/pose_stamped_array.hpp"
 #include "nav2_core/behavior_tree_navigator.hpp"
 #include "nav2_msgs/action/navigate_through_poses.hpp"
 #include "nav_msgs/msg/path.hpp"
@@ -41,6 +40,8 @@ class NavigateThroughPosesNavigator
 {
 public:
   using ActionT = nav2_msgs::action::NavigateThroughPoses;
+  typedef std::vector<geometry_msgs::msg::PoseStamped> Goals;
+
   /**
    * @brief A constructor for NavigateThroughPosesNavigator
    */
@@ -103,9 +104,8 @@ protected:
 
   /**
    * @brief Goal pose initialization on the blackboard
-   * @return bool if goal was initialized successfully to be processed
    */
-  bool initializeGoalPoses(ActionT::Goal::ConstSharedPtr goal);
+  void initializeGoalPoses(ActionT::Goal::ConstSharedPtr goal);
 
   rclcpp::Time start_time_;
   std::string goals_blackboard_id_;

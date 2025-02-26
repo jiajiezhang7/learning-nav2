@@ -22,7 +22,7 @@
 
 #include "rclcpp/rclcpp.hpp"
 
-#include "tf2/time.hpp"
+#include "tf2/time.h"
 #include "tf2_ros/buffer.h"
 #include "tf2_ros/transform_listener.h"
 
@@ -33,12 +33,10 @@
 #include "nav2_collision_monitor/types.hpp"
 #include "nav2_collision_monitor/polygon.hpp"
 #include "nav2_collision_monitor/circle.hpp"
-#include "nav2_collision_monitor/velocity_polygon.hpp"
 #include "nav2_collision_monitor/source.hpp"
 #include "nav2_collision_monitor/scan.hpp"
 #include "nav2_collision_monitor/pointcloud.hpp"
 #include "nav2_collision_monitor/range.hpp"
-#include "nav2_collision_monitor/polygon_source.hpp"
 
 namespace nav2_collision_monitor
 {
